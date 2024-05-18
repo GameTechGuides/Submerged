@@ -9,6 +9,9 @@ using Reactor.Utilities.Extensions;
 using Submerged.Resources;
 using Submerged.Localization.Strings;
 using UnityEngine;
+using System.Reflection;
+using Reactor.Utilities;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 
 namespace Submerged.Loading;
 
@@ -113,4 +116,30 @@ public sealed class AssetLoader(nint ptr) : MonoBehaviour(ptr)
 
         LoadingManager.DoneLoading(nameof(AssetLoader));
     }
+
+    [HideFromIl2Cpp]
+    public static Sprite GetSprite(string name)
+    {
+           var pixelsPerUnit = 100f;
+            var pivot = new Vector2(0.5f, 0.5f);
+
+            var assembly = Assembly.GetExecutingAssembly();
+            var tex = CanvasUtilities.CreateEmptyTexture();
+            var imageStream = assembly.GetManifestResourceStream(name);
+           var  img = imageStream.ReadFully();
+            LoadImage(tex, img, true);
+            tex.DontDestroy();
+            var sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), pivot, pixelsPerUnit);
+            sprite.DontDestroy();
+            return sprite;
+    }
+     public static void LoadImage(Texture2D tex, byte[] data, bool markNonReadable)
+        {
+            _iCallLoadImage ??= Il2CppInterop.Runtime.IL2CPP.ResolveICall<DLoadImage>("UnityEngine.ImageConversion::LoadImage");
+            var il2CPPArray = (Il2CppStructArray<byte>) data;
+            _iCallLoadImage.Invoke(tex.Pointer, il2CPPArray.Pointer, markNonReadable);
+        }
+
+        private delegate bool DLoadImage(IntPtr tex, IntPtr data, bool markNonReadable);
+         private static DLoadImage _iCallLoadImage;
 }

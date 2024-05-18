@@ -1,7 +1,12 @@
 using System.Linq;
 using HarmonyLib;
+using Reactor.Utilities.Extensions;
 using Submerged.Extensions;
+using Submerged.Loading;
+using Submerged.Resources;
 using Submerged.Systems.Elevator;
+using Submerged.Vents;
+using UnityEngine;
 using IntroCutscene_CoBegin = IntroCutscene._CoBegin_d__35;
 
 namespace Submerged.Map.Patches;
@@ -9,6 +14,7 @@ namespace Submerged.Map.Patches;
 [HarmonyPatch]
 public static class HideAndSeekPatches
 {
+
     [HarmonyPatch(typeof(HideAndSeekManager), nameof(HideAndSeekManager.StartGame))]
     [HarmonyPostfix]
     public static void DisableConsolesPatch()
@@ -76,17 +82,17 @@ public static class HideAndSeekPatches
         if (!GameManager.Instance.IsHideAndSeek()) return;
 
         // Check if the usable is a vent and if it's one of the vents that should be marked as unusable
-        if (usable.TryCast<Vent>() is { } vent && (vent.Id == UPPER_CENTRAL_VENT_ID || vent.Id == LOWER_CENTRAL_VENT_ID || vent.Id == ADMIN_VENT_ID))
+        if (usable.TryCast<Vent>() is { } vent && (vent.Id == VentPatchData.UPPER_CENTRAL_VENT_ID || vent.Id == VentPatchData.LOWER_CENTRAL_VENT_ID|| vent.Id == VentPatchData.ADMIN_VENT_ID))
         {
             // Display the wet floor sign for the admin vent and caution tape for central vents
             SpriteRenderer ventRenderer = vent.GetComponent<SpriteRenderer>();
-            if (vent.Id == ADMIN_VENT_ID)
+            if (vent.Id == VentPatchData.ADMIN_VENT_ID)
             {
-                ventRenderer.sprite = AssetLoader.GetSprite("WetFloorSign");
+                ventRenderer.sprite = AssetLoader.GetSprite("Submerged.Resources.Images.WetFloorSign");
             }
             else
             {
-                ventRenderer.sprite = AssetLoader.GetSprite("CautionTape");
+                ventRenderer.sprite = AssetLoader.GetSprite("Submerged.Resources.Images.CautionTape");
             }
 
             // Ensure the indicators are only visible in hide and seek mode
