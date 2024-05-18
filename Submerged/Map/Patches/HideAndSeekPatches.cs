@@ -66,4 +66,31 @@ public static class HideAndSeekPatches
                 return true;
         }
     }
+
+    // Add logic to display indicators for unusable vents during hide and seek mode
+    [HarmonyPatch(typeof(LogicUsablesHnS), nameof(LogicUsablesHnS.CanUse))]
+    [HarmonyPostfix]
+    public static void MarkUnusableVentsPatch(ref bool __result, [HarmonyArgument(0)] IUsable usable, [HarmonyArgument(1)] PlayerControl player)
+    {
+        if (!ShipStatus.Instance.IsSubmerged()) return;
+        if (!GameManager.Instance.IsHideAndSeek()) return;
+
+        // Check if the usable is a vent and if it's one of the vents that should be marked as unusable
+        if (usable.TryCast<Vent>() is { } vent && (vent.Id == UPPER_CENTRAL_VENT_ID || vent.Id == LOWER_CENTRAL_VENT_ID || vent.Id == ADMIN_VENT_ID))
+        {
+            // Display the wet floor sign for the admin vent and caution tape for central vents
+            SpriteRenderer ventRenderer = vent.GetComponent<SpriteRenderer>();
+            if (vent.Id == ADMIN_VENT_ID)
+            {
+                ventRenderer.sprite = AssetLoader.GetSprite("WetFloorSign");
+            }
+            else
+            {
+                ventRenderer.sprite = AssetLoader.GetSprite("CautionTape");
+            }
+
+            // Ensure the indicators are only visible in hide and seek mode
+            __result = false;
+        }
+    }
 }
