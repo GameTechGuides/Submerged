@@ -35,4 +35,17 @@ public static class SoundPatches
             }
         }
     }
+
+    // Add a new patch for ReportButton.SetActive method to disable the report button during lights-out
+    [HarmonyPatch(typeof(ReportButton), nameof(ReportButton.SetActive))]
+    [HarmonyPrefix]
+    public static bool ReportButtonSetActivePatch(ReportButton __instance, bool value)
+    {
+        if (SubmarineOxygenSystem.Instance.CheckOxygenSabotageStatus())
+        {
+            __instance.gameObject.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0f, 0.5f); // Add a visual indicator
+            return false; // Prevent the report button from being activated
+        }
+        return true; // Allow normal behavior if not during lights-out
+    }
 }

@@ -163,4 +163,10 @@ public sealed class SubmarineOxygenSystem(nint ptr) : CppObject(ptr), AU.ISystem
         byte amount = msgReader.ReadByte();
         RepairDamage(player, amount);
     }
+
+    // Added method to check if the oxygen sabotage is active and if the local player needs a mask
+    public bool CheckOxygenSabotageStatus()
+    {
+        return IsActive && LocalPlayerNeedsMask;
+    }
 }
